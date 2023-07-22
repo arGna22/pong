@@ -10,12 +10,15 @@
 #define PADDLE_WIDTH 10 
 #define PADDLE_HEIGHT 50 
 #define PADDLE_SPEED 600
+#define BALL_SIDE 10
+#define BALL_START_SPEED 100;
 
 /* Struct definitions */
 typedef struct ball {
 	float x, y;	/* (x, y) position on screen */
 	int w, h;	/* width and height of ball */
-	int dx, dy;	/* Movement vectors */
+	int speed;
+	float dx, dy;	/* Movement vectors */
 
 } ball_t;
 
@@ -29,7 +32,9 @@ typedef struct paddle {
 /* Function prototypes */
 void move_p();
 void init();
-void draw_paddle(paddle_t paddle);
+void draw_paddle(paddle_t p);
+void move_ball();
+void draw_ball();
 
 /* Program globals */
 static paddle_t paddle_p;
@@ -70,9 +75,16 @@ void init()
 	paddle_p.x = WINDOW_WIDTH - PADDLE_WIDTH - 20;
 	paddle_p.y = WINDOW_HEIGHT / 2;
 
+	ball.x = WINDOW_WIDTH / 2;
+	ball.y = WINDOW_HEIGHT / 2;
+	ball.h = BALL_SIDE;
+	ball.w = BALL_SIDE;
+	ball.dx = BALL_START_SPEED;
+	ball.dy = BALL_START_SPEED;
+
 }
-// Paddle-specific functions
-void move_p() // For player
+
+void move_p()
 {
 	if (paddle_p.up && !paddle_p.down) paddle_p.y += -PADDLE_SPEED/60;
 	if (paddle_p.down && !paddle_p.up) paddle_p.y += PADDLE_SPEED/60;
@@ -80,7 +92,7 @@ void move_p() // For player
 	if (paddle_p.y + PADDLE_HEIGHT >= WINDOW_HEIGHT) paddle_p.y = WINDOW_HEIGHT - PADDLE_HEIGHT;
 }
 
-void draw_paddle(paddle_t p)  // For player and ai
+void draw_paddle(paddle_t p) 
 {
 	SDL_Rect object;
 	object.x = (int)p.x;
@@ -91,6 +103,48 @@ void draw_paddle(paddle_t p)  // For player and ai
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 	SDL_RenderFillRect(rend, &object);
 	SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
+}
+
+// ball specific functions
+void move_ball() 
+{
+	ball.x += ball.dx / 60;
+	ball.y += ball.dy / 60;
+
+	if (ball.x <= 0) {
+		ball.x = 0; 
+		ball.dx = -ball.dx;
+	}
+
+	if (ball.x + BALL_SIDE >= WINDOW_WIDTH) {
+		ball.x = WINDOW_WIDTH - BALL_SIDE;
+		ball.dx = -ball.dx;
+	}
+
+	if (ball.y <= 0) {
+		ball.y = 0;
+		ball.dy = -ball.dy;
+	}
+
+	if (ball.y + BALL_SIDE >= WINDOW_HEIGHT) {
+		ball.y = WINDOW_HEIGHT - BALL_SIDE;
+		ball.dy = -ball.dy;
+	}
+}
+
+void draw_ball() 
+{
+	SDL_Rect object;
+
+	object.x = ball.x;
+	object.y = ball.y;
+	object.w = ball.w; 
+	object.h = ball.h; 
+
+	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
+	SDL_RenderFillRect(rend, &object);
+	SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
+
 }
 
 int main(void) 
@@ -137,6 +191,8 @@ int main(void)
 
 		SDL_RenderClear(rend); 
 		draw_paddle(paddle_p);
+		move_ball(); 
+		draw_ball();
 		SDL_RenderPresent(rend);
 		SDL_Delay(1000/60);
 	}
