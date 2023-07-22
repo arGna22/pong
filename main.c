@@ -9,7 +9,7 @@
 #define WINDOW_HEIGHT 480
 #define PADDLE_WIDTH 10 
 #define PADDLE_HEIGHT 50 
-#define PADDLE_SPEED 600
+#define PADDLE_SPEED 300
 #define BALL_SIDE 10
 #define BALL_START_SPEED 100;
 
@@ -35,6 +35,8 @@ void init();
 void draw_paddle(paddle_t p);
 void move_ball();
 void draw_ball();
+void check_collisions();
+void _reset_ball();
 
 /* Program globals */
 static paddle_t paddle_p;
@@ -61,8 +63,6 @@ void init()
 		exit(-1);	
 	}
 
-
-	
 	if (!(rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))) {
 		fprintf(stderr, "error creating renderer: %s\n", SDL_GetError());
 		SDL_DestroyWindow(win);
@@ -110,26 +110,6 @@ void move_ball()
 {
 	ball.x += ball.dx / 60;
 	ball.y += ball.dy / 60;
-
-	if (ball.x <= 0) {
-		ball.x = 0; 
-		ball.dx = -ball.dx;
-	}
-
-	if (ball.x + BALL_SIDE >= WINDOW_WIDTH) {
-		ball.x = WINDOW_WIDTH - BALL_SIDE;
-		ball.dx = -ball.dx;
-	}
-
-	if (ball.y <= 0) {
-		ball.y = 0;
-		ball.dy = -ball.dy;
-	}
-
-	if (ball.y + BALL_SIDE >= WINDOW_HEIGHT) {
-		ball.y = WINDOW_HEIGHT - BALL_SIDE;
-		ball.dy = -ball.dy;
-	}
 }
 
 void draw_ball() 
@@ -144,7 +124,25 @@ void draw_ball()
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 	SDL_RenderFillRect(rend, &object);
 	SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
+}
 
+void check_collisions() 
+{
+	// Collisions where ball bounces
+	if (ball.y <= 0 || ball.y + BALL_SIDE >= WINDOW_HEIGHT)  {ball.dy = -ball.dy; puts("collided with ceiling or floor");}
+	if (ball.x + BALL_SIDE >= paddle_p.x) {ball.dx = -ball.dx;puts("collision with paddle x");}
+
+	// Collisiosn where ball resets
+	if (ball.x <= 0 || ball.x + BALL_SIDE >= WINDOW_WIDTH) _reset_ball(); 
+}
+
+void _reset_ball() 
+{
+	ball.x = WINDOW_WIDTH / 2;
+	ball.y = WINDOW_HEIGHT / 2;
+
+	ball.dx = BALL_START_SPEED;
+	ball.dy = BALL_START_SPEED;
 }
 
 int main(void) 
@@ -184,12 +182,11 @@ int main(void)
 							break;
 					};
 			}
-				
-			// Move things
-			move_p();
 		}
 
 		SDL_RenderClear(rend); 
+		check_collisions();
+		move_p();
 		draw_paddle(paddle_p);
 		move_ball(); 
 		draw_ball();
