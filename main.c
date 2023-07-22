@@ -129,8 +129,14 @@ void draw_ball()
 void check_collisions() 
 {
 	// Collisions where ball bounces
-	if (ball.y <= 0 || ball.y + BALL_SIDE >= WINDOW_HEIGHT)  {ball.dy = -ball.dy; puts("collided with ceiling or floor");}
-	if (ball.x + BALL_SIDE >= paddle_p.x) {ball.dx = -ball.dx;puts("collision with paddle x");}
+	if (ball.y <= 0 || ball.y + BALL_SIDE >= WINDOW_HEIGHT)  {
+		ball.dy = -ball.dy;
+	}
+
+	if (ball.x + BALL_SIDE >= paddle_p.x && ball.x + BALL_SIDE >= paddle_p.x + PADDLE_WIDTH) {
+		if (ball.y + BALL_SIDE >= paddle_p.y && ball.y + BALL_SIDE <= paddle_p.y + PADDLE_HEIGHT)
+				ball.dx = -ball.dx;
+	}
 
 	// Collisiosn where ball resets
 	if (ball.x <= 0 || ball.x + BALL_SIDE >= WINDOW_WIDTH) _reset_ball(); 
