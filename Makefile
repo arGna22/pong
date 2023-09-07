@@ -1,2 +1,2 @@
 main: main.c
-	gcc main.c `sdl2-config --cflags --libs` -o main
+	gcc -g main.c `sdl2-config --cflags --libs` -o main -lm -lSDL2_ttf 
